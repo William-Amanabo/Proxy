@@ -16,7 +16,7 @@ app.use(cors());
 
 // Configuration
 const PORT = process.env.PORT || 5000;
-const HOST = "localhost";
+const HOST = process.env.HOST || "0.0.0.0";
 const API_SERVICE_URL = "https://paywithracks.herokuapp.com/racksapi/v1/";
 let DynamicUrl = "https://wwww.google.com";
 
@@ -70,6 +70,6 @@ app.use((req, res, next) => {
 });
 
 // Start Proxy
-app.listen(PORT, () => {
+app.listen(PORT,HOST, () => {
   console.log(`Starting Proxy at ${HOST}:${PORT}`);
 });
