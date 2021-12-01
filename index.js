@@ -9,8 +9,8 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 
 // Create Express Server
 const app = express();
-var csrfProtection = csrf({ cookie: true });
-var parseForm = bodyParser.urlencoded({ extended: false });
+/* var csrfProtection = csrf({ cookie: true });
+var parseForm = bodyParser.urlencoded({ extended: false }); */
 app.use(cookieParser());
 app.use(cors());
 
@@ -23,7 +23,7 @@ let DynamicUrl = "https://wwww.google.com";
 // Logging
 app.use(morgan("dev"));
 
-const updateQueryStringParameter = (path, key, value) => {
+/* const updateQueryStringParameter = (path, key, value) => {
   const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
   const separator = path.indexOf("?") !== -1 ? "&" : "?";
   if (path.match(re)) {
@@ -39,33 +39,37 @@ const customQueryAdder = (path) => {
   const params = new URLSearchParams(path);
   for (const [key, value] of params) {
   }
-};
+}; */
 
 app.get("/convert/:amount/:to/:from", (req, res) => {});
 // Proxy endpoints
 app.use((req, res, next) => {
-  DynamicUrl = req.headers.location;
-  delete req.headers.location;
-  console.log("Destination ", DynamicUrl);
-  app.use(
-    "*",
-    /* parseForm,
-    csrfProtection, */
-    createProxyMiddleware({
-      target: DynamicUrl,
-      changeOrigin: true,
-      ws: true,
-      logLevel: "debug",
-      /* pathRewrite: (path, req) => {
-        console.log("console logging anything", path, req.originalUrl);
-        return path;
-      }, */
-    })
-  );
-  next();
+  if (req.headers.location) {
+    DynamicUrl = req.headers.location;
+    delete req.headers.location;
+    console.log("Destination ", DynamicUrl);
+    app.use(
+      "*",
+      /* parseForm,
+      csrfProtection, */
+      createProxyMiddleware({
+        target: DynamicUrl,
+        changeOrigin: true,
+        ws: true,
+        logLevel: "debug",
+        /* pathRewrite: (path, req) => {
+          console.log("console logging anything", path, req.originalUrl);
+          return path;
+        }, */
+      })
+    );
+    next();
+  } else {
+    res.status(400).send("location header is missing");
+  }
 });
 
 // Start Proxy
-app.listen(PORT, HOST, () => {
+app.listen(PORT, () => {
   console.log(`Starting Proxy at ${HOST}:${PORT}`);
 });
